@@ -15,7 +15,6 @@ body{
   padding:10px;
   text-align:center;
 }
-
 h1{
   color:#facc15;
   font-size:20px;
@@ -41,7 +40,6 @@ p{
   margin:10px auto;
   width:120px;
   height:120px;
-  position:relative;
 }
 .heart{
   width:100%;
@@ -101,36 +99,36 @@ p{
   cursor:pointer;
   user-select:none;
 }
-
 .card{
   background:#fde68a;
   color:#422006;
 }
-
 .value{
   background:#1e293b;
   color:#fff;
   border:2px dashed #facc15;
 }
 
-/* SEÇİLİ */
-.selected{
-  outline:3px solid #facc15;
-}
-
-/* DOĞRU */
+/* DURUMLAR */
+.selected{outline:3px solid #facc15}
 .correct{
   background:#16a34a !important;
   border-color:#16a34a !important;
   color:#fff !important;
 }
 
-/* MESAJ */
+/* MESAJ & AYET */
 #message{
-  min-height:32px;
+  min-height:26px;
   font-size:13px;
   color:#facc15;
   margin-top:6px;
+}
+#ayetBox{
+  font-size:12px;
+  color:#e5e7eb;
+  margin-top:4px;
+  line-height:1.4;
 }
 </style>
 </head>
@@ -163,29 +161,65 @@ p{
 <!-- DEĞERLER -->
 <div class="box">
 <h3>Değerler</h3>
-<div class="value" data-match="anne">🕊️ Sabır</div>
-<div class="value" data-match="baba">🛡️ Sorumluluk</div>
-<div class="value" data-match="cocuk">🤝 Paylaşmak</div>
-<div class="value" data-match="dede">🙏 Dua</div>
+<div id="values"></div>
 </div>
 
 </div>
 </div>
 
 <div id="message"></div>
+<div id="ayetBox"></div>
 
 <script>
+/* === VERİ === */
+const data=[
+{
+  id:"anne",
+  text:"🕊️ Sabır",
+  ayet:"Şüphesiz Allah sabredenlerle beraberdir. (Bakara 153)"
+},
+{
+  id:"baba",
+  text:"🛡️ Sorumluluk",
+  ayet:"Şüphesiz Allah size emanetleri ehline vermenizi emreder. (Nisâ 58)"
+},
+{
+  id:"cocuk",
+  text:"🤝 Paylaşmak",
+  ayet:"Onlar kendileri ihtiyaç içindeyken bile paylaşırlar. (Haşr 9)"
+},
+{
+  id:"dede",
+  text:"🙏 Dua",
+  ayet:"Bana dua edin, size karşılık vereyim. (Mümin 60)"
+}
+];
+
+/* === DEĞERLERİ RASTGELE YERLEŞTİR === */
+const shuffled=[...data].sort(()=>Math.random()-0.5);
+const valuesDiv=document.getElementById("values");
+
+shuffled.forEach(d=>{
+  const v=document.createElement("div");
+  v.className="value";
+  v.dataset.match=d.id;
+  v.dataset.ayet=d.ayet;
+  v.textContent=d.text;
+  valuesDiv.appendChild(v);
+});
+
+/* === OYUN MANTIĞI === */
 let selected=null;
 let progress=0;
 const fill=document.getElementById("fill");
 const message=document.getElementById("message");
+const ayetBox=document.getElementById("ayetBox");
 
 document.querySelectorAll(".card").forEach(c=>{
   c.addEventListener("click",()=>{
     document.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));
     selected=c;
     c.classList.add("selected");
-    navigator.vibrate?.(15);
   });
 });
 
@@ -193,6 +227,7 @@ document.querySelectorAll(".value").forEach(v=>{
   v.addEventListener("click",()=>{
     if(!selected){
       message.textContent="Önce bir aile üyesi seç.";
+      ayetBox.textContent="";
       return;
     }
     if(v.dataset.match===selected.dataset.id && !v.classList.contains("correct")){
@@ -201,15 +236,16 @@ document.querySelectorAll(".value").forEach(v=>{
       progress+=25;
       fill.style.height=progress+"%";
       message.textContent="💛 Aile kalbi doluyor...";
+      ayetBox.textContent=v.dataset.ayet;
       selected.classList.remove("selected");
       selected=null;
 
       if(progress===100){
-        message.textContent="🌙 Aile kalbi tamamlandı. Ramazan aileyle güzeldir.";
+        message.textContent="🌙 Aile kalbi tamamlandı.";
       }
     }else{
       message.textContent="❌ Tekrar dene.";
-      navigator.vibrate?.(30);
+      ayetBox.textContent="";
     }
   });
 });

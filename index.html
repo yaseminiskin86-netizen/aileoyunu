@@ -14,6 +14,7 @@ body{
   color:#fff;
   padding:10px;
   text-align:center;
+  overflow:hidden;
 }
 h1{
   color:#facc15;
@@ -33,6 +34,8 @@ p{
   background:#1e293b;
   border-radius:16px;
   padding:12px;
+  position:relative;
+  z-index:1;
 }
 
 /* KALP */
@@ -130,6 +133,43 @@ p{
   margin-top:4px;
   line-height:1.4;
 }
+
+/* 🎉 FİNAL OVERLAY */
+#final{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.92);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+}
+#final h2{
+  font-size:32px;
+  color:#facc15;
+  text-align:center;
+  padding:20px;
+  animation:pop 1s ease;
+}
+@keyframes pop{
+  0%{transform:scale(.6);opacity:0}
+  100%{transform:scale(1);opacity:1}
+}
+
+/* 💛 YAĞAN KALPLER */
+.heart-fall{
+  position:fixed;
+  top:-20px;
+  font-size:24px;
+  animation:fall linear forwards;
+  z-index:9;
+}
+@keyframes fall{
+  to{
+    transform:translateY(110vh);
+    opacity:0;
+  }
+}
 </style>
 </head>
 
@@ -140,7 +180,6 @@ p{
 
 <div class="scene">
 
-<!-- KALP -->
 <div class="heart-box">
   <div class="heart">
     <div class="fill" id="fill"></div>
@@ -149,7 +188,6 @@ p{
 
 <div class="columns">
 
-<!-- AİLE -->
 <div class="box">
 <h3>Aile</h3>
 <div class="card" data-id="anne">Anne</div>
@@ -158,7 +196,6 @@ p{
 <div class="card" data-id="dede">Dede / Nine</div>
 </div>
 
-<!-- DEĞERLER -->
 <div class="box">
 <h3>Değerler</h3>
 <div id="values"></div>
@@ -170,32 +207,21 @@ p{
 <div id="message"></div>
 <div id="ayetBox"></div>
 
+<!-- 🎉 FİNAL -->
+<div id="final">
+  <h2>💛 RAMAZAN<br>AİLEYLE<br>GÜZELDİR 💛</h2>
+</div>
+
 <script>
-/* === VERİ === */
+/* VERİ */
 const data=[
-{
-  id:"anne",
-  text:"🕊️ Sabır",
-  ayet:"Şüphesiz Allah sabredenlerle beraberdir. (Bakara 153)"
-},
-{
-  id:"baba",
-  text:"🛡️ Sorumluluk",
-  ayet:"Şüphesiz Allah size emanetleri ehline vermenizi emreder. (Nisâ 58)"
-},
-{
-  id:"cocuk",
-  text:"🤝 Paylaşmak",
-  ayet:"Onlar kendileri ihtiyaç içindeyken bile paylaşırlar. (Haşr 9)"
-},
-{
-  id:"dede",
-  text:"🙏 Dua",
-  ayet:"Bana dua edin, size karşılık vereyim. (Mümin 60)"
-}
+{ id:"anne", text:"🕊️ Sabır", ayet:"Şüphesiz Allah sabredenlerle beraberdir. (Bakara 153)"},
+{ id:"baba", text:"🛡️ Sorumluluk", ayet:"Şüphesiz Allah size emanetleri ehline vermenizi emreder. (Nisâ 58)"},
+{ id:"cocuk", text:"🤝 Paylaşmak", ayet:"Onlar kendileri ihtiyaç içindeyken bile paylaşırlar. (Haşr 9)"},
+{ id:"dede", text:"🙏 Dua", ayet:"Bana dua edin, size karşılık vereyim. (Mümin 60)"}
 ];
 
-/* === DEĞERLERİ RASTGELE YERLEŞTİR === */
+/* RASTGELE */
 const shuffled=[...data].sort(()=>Math.random()-0.5);
 const valuesDiv=document.getElementById("values");
 
@@ -208,7 +234,7 @@ shuffled.forEach(d=>{
   valuesDiv.appendChild(v);
 });
 
-/* === OYUN MANTIĞI === */
+/* OYUN */
 let selected=null;
 let progress=0;
 const fill=document.getElementById("fill");
@@ -241,7 +267,7 @@ document.querySelectorAll(".value").forEach(v=>{
       selected=null;
 
       if(progress===100){
-        message.textContent="🌙 Aile kalbi tamamlandı.";
+        showFinal();
       }
     }else{
       message.textContent="❌ Tekrar dene.";
@@ -249,6 +275,24 @@ document.querySelectorAll(".value").forEach(v=>{
     }
   });
 });
+
+/* 🎉 FİNAL SAHNESİ */
+function showFinal(){
+  document.getElementById("final").style.display="flex";
+  for(let i=0;i<40;i++){
+    setTimeout(createHeart, i*150);
+  }
+}
+
+function createHeart(){
+  const h=document.createElement("div");
+  h.className="heart-fall";
+  h.textContent="💛";
+  h.style.left=Math.random()*100+"vw";
+  h.style.animationDuration=(3+Math.random()*2)+"s";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),5000);
+}
 </script>
 
 </body>

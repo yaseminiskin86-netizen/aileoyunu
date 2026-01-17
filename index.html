@@ -14,7 +14,6 @@ body{
   color:#fff;
   padding:10px;
 }
-
 h1{
   text-align:center;
   color:#facc15;
@@ -36,6 +35,7 @@ p{
   border-radius:16px;
   padding:10px;
   position:relative;
+  overflow:hidden;
 }
 
 /* SOFRA */
@@ -95,12 +95,10 @@ p{
   user-select:none;
 }
 
-/* SEÇİLİ */
 .selected{
   outline:3px solid #facc15;
 }
 
-/* MESAJ */
 #message{
   min-height:36px;
   margin-top:6px;
@@ -109,11 +107,18 @@ p{
   color:#facc15;
 }
 
-/* ÇİZGİ */
+/* SVG */
 svg{
   position:absolute;
   inset:0;
   pointer-events:none;
+}
+.path{
+  fill:none;
+  stroke:#facc15;
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
 </style>
 </head>
@@ -182,24 +187,27 @@ function speakAyet(text){
   speechSynthesis.speak(u);
 }
 
-/* ÇİZGİ */
-function drawLine(from,to){
+/* KAVİSLİ ÇİZGİ */
+function drawCurve(from,to){
   const svg=document.getElementById("lines");
   const r1=from.getBoundingClientRect();
   const r2=to.getBoundingClientRect();
   const s=document.getElementById("scene").getBoundingClientRect();
 
-  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
-  line.setAttribute("x1",r1.right-s.left);
-  line.setAttribute("y1",r1.top+r1.height/2-s.top);
-  line.setAttribute("x2",r2.left-s.left);
-  line.setAttribute("y2",r2.top+r2.height/2-s.top);
-  line.setAttribute("stroke","#facc15");
-  line.setAttribute("stroke-width","3");
-  svg.appendChild(line);
+  const x1=r1.right-s.left;
+  const y1=r1.top+r1.height/2-s.top;
+  const x2=r2.left-s.left;
+  const y2=r2.top+r2.height/2-s.top;
+
+  const cx=(x1+x2)/2;
+  const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+  const d=`M ${x1} ${y1} Q ${cx} ${y1} ${x2} ${y2}`;
+  path.setAttribute("d",d);
+  path.setAttribute("class","path");
+  svg.appendChild(path);
 }
 
-/* TAP MANTIK */
+/* TAP */
 let selected=null;
 const message=document.getElementById("message");
 
@@ -208,7 +216,7 @@ document.querySelectorAll(".card").forEach(c=>{
     document.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));
     selected=c;
     c.classList.add("selected");
-    navigator.vibrate?.(30); // click hissi
+    navigator.vibrate?.(20);
   });
 });
 
@@ -219,7 +227,7 @@ document.querySelectorAll(".value").forEach(v=>{
       return;
     }
     if(v.dataset.match===selected.dataset.id){
-      drawLine(selected,v);
+      drawCurve(selected,v);
       const full=v.dataset.ref+" : "+v.dataset.ayet;
       message.textContent=full;
       speakAyet(full);
@@ -227,7 +235,7 @@ document.querySelectorAll(".value").forEach(v=>{
       selected=null;
     }else{
       message.textContent="❌ Tekrar dene.";
-      navigator.vibrate?.(50);
+      navigator.vibrate?.(40);
     }
   });
 });

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aile Sofrası – İftara Hazırlık</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  background:#0f172a;
+  color:#fff;
+  padding:10px;
+}
+
+h1{
+  text-align:center;
+  color:#facc15;
+  font-size:20px;
+  margin:6px 0;
+}
+p{
+  text-align:center;
+  font-size:13px;
+  color:#e5e7eb;
+  margin:0 0 8px;
+}
+
+/* SAHNE */
+.scene{
+  max-width:480px;
+  margin:0 auto;
+  background:#1e293b;
+  border-radius:16px;
+  padding:10px;
+  position:relative;
+}
+
+/* SOFRA */
+.table{
+  height:40px;
+  background:linear-gradient(to right,#92400e,#d97706,#92400e);
+  border-radius:20px;
+  margin-bottom:8px;
+}
+
+/* YAN YANA */
+.columns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+/* KUTU */
+.box{
+  background:#020617;
+  border-radius:12px;
+  padding:8px;
+}
+.box h3{
+  text-align:center;
+  color:#fde68a;
+  font-size:14px;
+  margin:4px 0 6px;
+}
+
+/* KART */
+.card{
+  background:#fde68a;
+  color:#422006;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:8px;
+  font-size:14px;
+  font-weight:600;
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+}
+
+/* DEĞER */
+.value{
+  background:#1e293b;
+  color:#fff;
+  border:2px dashed #facc15;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:8px;
+  font-size:14px;
+  font-weight:600;
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+}
+
+/* SEÇİLİ */
+.selected{
+  outline:3px solid #facc15;
+}
+
+/* MESAJ */
+#message{
+  min-height:36px;
+  margin-top:6px;
+  font-size:13px;
+  text-align:center;
+  color:#facc15;
+}
+
+/* ÇİZGİ */
+svg{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 Aile Sofrası</h1>
+<p>Soldan bir kart seç, sağdan değeri eşleştir</p>
+
+<div class="scene" id="scene">
+<svg id="lines"></svg>
+
+<div class="table"></div>
+
+<div class="columns">
+
+<!-- SOL -->
+<div class="box">
+<h3>Aile</h3>
+<div class="card" data-id="anne">Anne</div>
+<div class="card" data-id="baba">Baba</div>
+<div class="card" data-id="cocuk">Çocuk</div>
+<div class="card" data-id="dede">Dede / Nine</div>
+</div>
+
+<!-- SAĞ -->
+<div class="box">
+<h3>İftar Değerleri</h3>
+<div id="values"></div>
+</div>
+
+</div>
+</div>
+
+<div id="message"></div>
+
+<script>
+/* === VERİ === */
+const data=[
+{ id:"anne", text:"🕊️ Sabır", ayet:"Şüphesiz Allah sabredenlerle beraberdir.", ref:"Bakara 153"},
+{ id:"baba", text:"🛡️ Sorumluluk", ayet:"Şüphesiz Allah size emanetleri ehline vermenizi emreder.", ref:"Nisâ 58"},
+{ id:"cocuk", text:"🤝 Paylaşmak", ayet:"Onlar kendileri ihtiyaç içindeyken bile paylaşırlar.", ref:"Haşr 9"},
+{ id:"dede", text:"🙏 Dua", ayet:"Bana dua edin, size karşılık vereyim.", ref:"Mümin 60"}
+];
+
+/* RASTGELE */
+data.sort(()=>Math.random()-0.5);
+const valuesDiv=document.getElementById("values");
+
+data.forEach(d=>{
+  const v=document.createElement("div");
+  v.className="value";
+  v.dataset.match=d.id;
+  v.dataset.ayet=d.ayet;
+  v.dataset.ref=d.ref;
+  v.textContent=d.text;
+  valuesDiv.appendChild(v);
+});
+
+/* AYET SES */
+function speakAyet(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="tr-TR";
+  u.rate=0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+/* ÇİZGİ */
+function drawLine(from,to){
+  const svg=document.getElementById("lines");
+  const r1=from.getBoundingClientRect();
+  const r2=to.getBoundingClientRect();
+  const s=document.getElementById("scene").getBoundingClientRect();
+
+  const line=document.createElementNS("http://www.w3.org/2000/svg","line");
+  line.setAttribute("x1",r1.right-s.left);
+  line.setAttribute("y1",r1.top+r1.height/2-s.top);
+  line.setAttribute("x2",r2.left-s.left);
+  line.setAttribute("y2",r2.top+r2.height/2-s.top);
+  line.setAttribute("stroke","#facc15");
+  line.setAttribute("stroke-width","3");
+  svg.appendChild(line);
+}
+
+/* TAP MANTIK */
+let selected=null;
+const message=document.getElementById("message");
+
+document.querySelectorAll(".card").forEach(c=>{
+  c.addEventListener("click",()=>{
+    document.querySelectorAll(".card").forEach(x=>x.classList.remove("selected"));
+    selected=c;
+    c.classList.add("selected");
+    navigator.vibrate?.(30); // click hissi
+  });
+});
+
+document.querySelectorAll(".value").forEach(v=>{
+  v.addEventListener("click",()=>{
+    if(!selected){
+      message.textContent="Önce soldan bir kart seç.";
+      return;
+    }
+    if(v.dataset.match===selected.dataset.id){
+      drawLine(selected,v);
+      const full=v.dataset.ref+" : "+v.dataset.ayet;
+      message.textContent=full;
+      speakAyet(full);
+      selected.classList.remove("selected");
+      selected=null;
+    }else{
+      message.textContent="❌ Tekrar dene.";
+      navigator.vibrate?.(50);
+    }
+  });
+});
+</script>
+
+</body>
+</html>

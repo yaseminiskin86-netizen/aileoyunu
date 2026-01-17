@@ -14,6 +14,7 @@ body{
   color:#fff;
   padding:10px;
 }
+
 h1{
   text-align:center;
   color:#facc15;
@@ -34,8 +35,6 @@ p{
   background:#1e293b;
   border-radius:16px;
   padding:10px;
-  position:relative;
-  overflow:hidden;
 }
 
 /* SOFRA */
@@ -66,7 +65,7 @@ p{
   margin:4px 0 6px;
 }
 
-/* KART */
+/* KARTLAR */
 .card{
   background:#fde68a;
   color:#422006;
@@ -80,7 +79,7 @@ p{
   user-select:none;
 }
 
-/* DEĞER */
+/* DEĞERLER */
 .value{
   background:#1e293b;
   color:#fff;
@@ -95,10 +94,19 @@ p{
   user-select:none;
 }
 
+/* SEÇİLİ */
 .selected{
   outline:3px solid #facc15;
 }
 
+/* DOĞRU */
+.correct{
+  background:#16a34a !important;
+  color:#fff !important;
+  border-color:#16a34a !important;
+}
+
+/* MESAJ */
 #message{
   min-height:36px;
   margin-top:6px;
@@ -106,30 +114,15 @@ p{
   text-align:center;
   color:#facc15;
 }
-
-/* SVG */
-svg{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-.path{
-  fill:none;
-  stroke:#facc15;
-  stroke-width:3;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
 </style>
 </head>
 
 <body>
 
 <h1>🌙 Aile Sofrası</h1>
-<p>Soldan bir kart seç, sağdan değeri eşleştir</p>
+<p>Soldan bir aile üyesi seç, sağdan doğru değeri dokun</p>
 
-<div class="scene" id="scene">
-<svg id="lines"></svg>
+<div class="scene">
 
 <div class="table"></div>
 
@@ -156,7 +149,7 @@ svg{
 <div id="message"></div>
 
 <script>
-/* === VERİ === */
+/* VERİ */
 const data=[
 { id:"anne", text:"🕊️ Sabır", ayet:"Şüphesiz Allah sabredenlerle beraberdir.", ref:"Bakara 153"},
 { id:"baba", text:"🛡️ Sorumluluk", ayet:"Şüphesiz Allah size emanetleri ehline vermenizi emreder.", ref:"Nisâ 58"},
@@ -187,27 +180,7 @@ function speakAyet(text){
   speechSynthesis.speak(u);
 }
 
-/* KAVİSLİ ÇİZGİ */
-function drawCurve(from,to){
-  const svg=document.getElementById("lines");
-  const r1=from.getBoundingClientRect();
-  const r2=to.getBoundingClientRect();
-  const s=document.getElementById("scene").getBoundingClientRect();
-
-  const x1=r1.right-s.left;
-  const y1=r1.top+r1.height/2-s.top;
-  const x2=r2.left-s.left;
-  const y2=r2.top+r2.height/2-s.top;
-
-  const cx=(x1+x2)/2;
-  const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-  const d=`M ${x1} ${y1} Q ${cx} ${y1} ${x2} ${y2}`;
-  path.setAttribute("d",d);
-  path.setAttribute("class","path");
-  svg.appendChild(path);
-}
-
-/* TAP */
+/* TAP MANTIĞI */
 let selected=null;
 const message=document.getElementById("message");
 
@@ -223,11 +196,13 @@ document.querySelectorAll(".card").forEach(c=>{
 document.querySelectorAll(".value").forEach(v=>{
   v.addEventListener("click",()=>{
     if(!selected){
-      message.textContent="Önce soldan bir kart seç.";
+      message.textContent="Önce soldan bir aile üyesi seç.";
       return;
     }
+
     if(v.dataset.match===selected.dataset.id){
-      drawCurve(selected,v);
+      v.classList.add("correct");
+      selected.classList.add("correct");
       const full=v.dataset.ref+" : "+v.dataset.ayet;
       message.textContent=full;
       speakAyet(full);
